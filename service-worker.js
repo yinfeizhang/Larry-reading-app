@@ -1,4 +1,4 @@
-const CACHE_NAME = "larry-reading-tracker-v1";
+const CACHE_NAME = "reading_app_color-v1";
 const URLS_TO_CACHE = [
   "./",
   "./reading_app_color.html",
