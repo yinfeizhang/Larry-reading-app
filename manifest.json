@@ -1,0 +1,20 @@
+{
+  "name": "Larry Reading Tracker",
+  "short_name": "Larry Reading",
+  "start_url": "./larry_reading_tracker_pwa.html",
+  "display": "standalone",
+  "background_color": "#fff9db",
+  "theme_color": "#ff922b",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
