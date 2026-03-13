@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Larry Reading Tracker</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --sky-blue: #4dabf7;
+      --deep-blue: #1971c2;
+      --green: #51cf66;
+      --dark-green: #2f9e44;
+      --yellow: #ffd43b;
+      --gold: #fab005;
+      --orange: #ff922b;
+      --dark-orange: #f76707;
+      --red: #ff6b6b;
+      --dark-red: #e03131;
+      --teal: #20c997;
+      --light-cream: #fff9db;
+      --light-blue: #e7f5ff;
+      --light-green: #ebfbee;
+      --light-orange: #fff4e6;
+      --page-bg: linear-gradient(135deg, #e7f5ff 0%, #fff9db 35%, #ebfbee 65%, #fff4e6 100%);
+      --text-main: #0b3d91;
+      --text-soft: #1c5d99;
+      --white: #ffffff;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--page-bg);
+      color: var(--text-main);
+    }
+
+    .page {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .left-panel {
+      width: 42%;
+      min-width: 340px;
+      background: linear-gradient(180deg, #ffffff 0%, #fff9db 100%);
+      border-right: 4px solid var(--orange);
+      padding: 20px;
+    }
+
+    .right-panel {
+      flex: 1;
+      padding: 30px;
+      background: linear-gradient(180deg, #e7f5ff 0%, #ebfbee 100%);
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 34px;
+      color: var(--dark-orange);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      color: var(--deep-blue);
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      background: linear-gradient(90deg, var(--red), var(--orange), var(--yellow), var(--green), var(--sky-blue));
+      padding: 10px 12px;
+      border-radius: 16px;
+    }
+
+    .calendar-header h2 {
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
+
+    .calendar-header button {
+      border: none;
+      background: white;
+      color: var(--dark-orange);
+      font-size: 18px;
+      font-weight: bold;
+      padding: 8px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .calendar-header button:hover {
+      background: var(--light-cream);
+    }
+
+    .weekday-row,
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    .weekday {
+      text-align: center;
+      font-weight: bold;
+      padding: 8px 0;
+      color: var(--dark-orange);
+      background: var(--light-orange);
+      border-radius: 10px;
+    }
+
+    .day-cell {
+      min-height: 96px;
+      background: linear-gradient(180deg, #ffffff 0%, #e7f5ff 100%);
+      border-radius: 14px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      border: 2px solid #b3e5fc;
+      box-shadow: 0 4px 10px rgba(25, 113, 194, 0.08);
+    }
+
+    .day-cell.empty {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+
+    .day-number {
+      font-weight: bold;
+      font-size: 15px;
+      margin-bottom: 6px;
+      color: var(--deep-blue);
+    }
+
+    .reading-time {
+      font-size: 13px;
+      color: var(--dark-green);
+      line-height: 1.3;
+      white-space: pre-line;
+      font-weight: bold;
+    }
+
+    .streak-mark {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--dark-orange);
+      font-weight: bold;
+      line-height: 1.2;
+    }
+
+    .today {
+      border-color: var(--gold);
+      background: linear-gradient(180deg, #fff3bf 0%, #fff9db 100%);
+    }
+
+    .tracker-card {
+      background: white;
+      max-width: 780px;
+      border-radius: 22px;
+      padding: 28px;
+      box-shadow: 0 10px 28px rgba(25, 113, 194, 0.15);
+      border: 4px solid var(--yellow);
+    }
+
+    .timer {
+      font-size: 60px;
+      font-weight: bold;
+      margin: 24px 0 10px;
+      color: var(--dark-red);
+      background: linear-gradient(90deg, #fff3bf, #fff4e6);
+      display: inline-block;
+      padding: 10px 22px;
+      border-radius: 18px;
+      border: 3px solid var(--orange);
+    }
+
+    .summary {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: var(--deep-blue);
+      font-weight: bold;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 22px 0;
+    }
+
+    .button-row button {
+      border: none;
+      padding: 12px 18px;
+      border-radius: 14px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      color: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .button-row button:nth-child(1) {
+      background: var(--green);
+    }
+
+    .button-row button:nth-child(1):hover {
+      background: var(--dark-green);
+    }
+
+    .button-row button:nth-child(2) {
+      background: var(--red);
+    }
+
+    .button-row button:nth-child(2):hover {
+      background: var(--dark-red);
+    }
+
+    .button-row button.secondary {
+      background: var(--sky-blue);
+    }
+
+    .button-row button.secondary:hover {
+      background: var(--deep-blue);
+    }
+
+    .button-row button:nth-child(4) {
+      background: var(--orange);
+    }
+
+    .button-row button:nth-child(4):hover {
+      background: var(--dark-orange);
+    }
+
+    .stars {
+      font-size: 30px;
+      margin-top: 10px;
+      min-height: 42px;
+      line-height: 1.4;
+      word-break: break-word;
+      background: var(--light-cream);
+      border-radius: 14px;
+      padding: 10px 12px;
+      border: 2px dashed var(--gold);
+    }
+
+    .today-box,
+    .reward-box,
+    .ideas-box,
+    .streak-box,
+    .rules-box {
+      margin-top: 18px;
+      border-radius: 16px;
+      padding: 14px 16px;
+      border: 2px solid transparent;
+    }
+
+    .today-box {
+      background: linear-gradient(135deg, #e7f5ff, #d0ebff);
+      border-color: var(--sky-blue);
+    }
+
+    .streak-box {
+      background: linear-gradient(135deg, #fff4e6, #ffe8cc);
+      border-color: var(--orange);
+    }
+
+    .reward-box {
+      background: linear-gradient(135deg, #ebfbee, #d3f9d8);
+      border-color: var(--green);
+    }
+
+    .ideas-box {
+      background: linear-gradient(135deg, #fff9db, #ffec99);
+      border-color: var(--yellow);
+    }
+
+    .rules-box {
+      background: linear-gradient(135deg, #fff4e6, #fff9db);
+      border-color: var(--orange);
+      margin-top: 20px;
+    }
+
+    .reward-stats,
+    .streak-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(100px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 14px;
+      padding: 12px;
+      text-align: center;
+      border: 2px solid #c5f6fa;
+      box-shadow: 0 4px 10px rgba(25, 113, 194, 0.08);
+    }
+
+    .stat-number {
+      font-size: 28px;
+      font-weight: bold;
+      margin-top: 6px;
+      color: var(--dark-orange);
+    }
+
+    .reward-list {
+      margin: 8px 0 0 0;
+      padding-left: 18px;
+      line-height: 1.8;
+      color: var(--text-main);
+      font-weight: bold;
+    }
+
+    .message {
+      margin-top: 12px;
+      font-size: 15px;
+      color: var(--deep-blue);
+      min-height: 22px;
+      line-height: 1.5;
+      white-space: pre-line;
+      font-weight: bold;
+    }
+
+    .rules-box h3 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      color: var(--dark-red);
+    }
+
+    .rules-box .rule-section {
+      margin-bottom: 14px;
+    }
+
+    .rules-box .rule-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .rules-box p {
+      margin: 4px 0;
+      line-height: 1.6;
+      color: var(--text-soft);
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 900px) {
+      .page {
+        flex-direction: column;
+      }
+
+      .left-panel {
+        width: 100%;
+        min-width: 0;
+        border-right: none;
+        border-bottom: 4px solid var(--orange);
+      }
+
+      .reward-stats,
+      .streak-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .reward-stats,
+      .streak-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .timer {
+        font-size: 44px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="left-panel">
+      <div class="calendar-header">
+        <button onclick="changeMonth(-1)">◀</button>
+        <h2 id="monthTitle">Month Year</h2>
+        <button onclick="changeMonth(1)">▶</button>
+      </div>
+
+      <div class="weekday-row">
+        <div class="weekday">Sun</div>
+        <div class="weekday">Mon</div>
+        <div class="weekday">Tue</div>
+        <div class="weekday">Wed</div>
+        <div class="weekday">Thu</div>
+        <div class="weekday">Fri</div>
+        <div class="weekday">Sat</div>
+      </div>
+
+      <div id="calendarGrid" class="calendar-grid"></div>
+
+      <div class="rules-box">
+        <div class="rule-section">
+          <h3>Reward Rules</h3>
+          <p>⭐ 1 star = 5 minutes of reading</p>
+          <p>🏅 10 stars = 1 badge</p>
+          <p>🎁 1 badge = 1 reward</p>
+        </div>
+
+        <div class="rule-section">
+          <h3>Streak Bonus Rules</h3>
+          <p>🔥 3-day streak = +2 bonus stars</p>
+          <p>🔥 7-day streak = +1 bonus badge</p>
+          <p>A streak day counts when reading time is saved that day.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="tracker-card">
+        <h1>📚 Larry's Reading Time</h1>
+
+        <div class="timer" id="time">00:00</div>
+        <div class="summary" id="minutes">Today's unsaved reading: 0 min</div>
+
+        <div class="button-row">
+          <button onclick="startTimer()">Start</button>
+          <button onclick="stopTimer()">Stop</button>
+          <button class="secondary" onclick="resetTimer()">Reset</button>
+          <button onclick="saveTodayReading()">Save Today</button>
+        </div>
+
+        <h2>⭐ Today's Session Stars</h2>
+        <div class="stars" id="stars"></div>
+
+        <div class="today-box">
+          <strong>Today’s saved total</strong>
+          <div id="savedTodayText">0 min saved</div>
+        </div>
+
+        <div class="streak-box">
+          <strong>Streak Bonus</strong>
+          <div class="streak-stats">
+            <div class="stat-card">
+              <div>🔥 Current Streak</div>
+              <div class="stat-number" id="currentStreak">0</div>
+            </div>
+            <div class="stat-card">
+              <div>🏆 Best Streak</div>
+              <div class="stat-number" id="bestStreak">0</div>
+            </div>
+            <div class="stat-card">
+              <div>⭐ Bonus Stars</div>
+              <div class="stat-number" id="bonusStars">0</div>
+            </div>
+            <div class="stat-card">
+              <div>🏅 Bonus Badges</div>
+              <div class="stat-number" id="bonusBadges">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="reward-box">
+          <strong>Reward Progress</strong>
+
+          <div class="reward-stats">
+            <div class="stat-card">
+              <div>⭐ Total Stars</div>
+              <div class="stat-number" id="totalStars">0</div>
+            </div>
+
+            <div class="stat-card">
+              <div>🏅 Total Badges</div>
+              <div class="stat-number" id="totalBadges">0</div>
+            </div>
+
+            <div class="stat-card">
+              <div>🎁 Rewards Left</div>
+              <div class="stat-number" id="availableRewards">0</div>
+            </div>
+
+            <div class="stat-card">
+              <div>🎉 Redeemed</div>
+              <div class="stat-number" id="rewardsRedeemed">0</div>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button onclick="redeemReward()">Redeem 1 Badge Reward</button>
+          </div>
+
+          <div class="message" id="rewardMessage"></div>
+        </div>
+
+        <div class="ideas-box">
+          <strong>Reward Ideas</strong>
+          <ul class="reward-list">
+            <li>Choose dessert tonight 🍦</li>
+            <li>Choose the bedtime story 📚</li>
+            <li>15 minutes extra screen time 🎮</li>
+            <li>Choose family movie night 🎬</li>
+            <li>Choose dinner menu 🍕</li>
+            <li>Choose a board game 🎲</li>
+            <li>Pick a weekend activity 🚗</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let timer = null;
+    let totalSeconds = 0;
+
+    const today = new Date();
+    let currentMonth = today.getMonth();
+    let currentYear = today.getFullYear();
+
+    function getDateKey(year, month, day) {
+      const mm = String(month + 1).padStart(2, "0");
+      const dd = String(day).padStart(2, "0");
+      return `${year}-${mm}-${dd}`;
+    }
+
+    function parseDateKey(key) {
+      const [y, m, d] = key.split("-").map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function addDays(date, days) {
+      const newDate = new Date(date);
+      newDate.setDate(newDate.getDate() + days);
+      return newDate;
+    }
+
+    function formatDateKeyFromDate(date) {
+      return getDateKey(date.getFullYear(), date.getMonth(), date.getDate());
+    }
+
+    function daysBetween(dateA, dateB) {
+      const oneDay = 24 * 60 * 60 * 1000;
+      const utcA = Date.UTC(dateA.getFullYear(), dateA.getMonth(), dateA.getDate());
+      const utcB = Date.UTC(dateB.getFullYear(), dateB.getMonth(), dateB.getDate());
+      return Math.round((utcB - utcA) / oneDay);
+    }
+
+    function getSavedLogs() {
+      return JSON.parse(localStorage.getItem("readingLogs") || "{}");
+    }
+
+    function saveLogs(logs) {
+      localStorage.setItem("readingLogs", JSON.stringify(logs));
+    }
+
+    function getRewardsData() {
+      const raw = JSON.parse(localStorage.getItem("rewardData") || "{}");
+
+      return {
+        baseStars: Number(raw.baseStars) || 0,
+        bonusStars: Number(raw.bonusStars) || 0,
+        bonusBadges: Number(raw.bonusBadges) || 0,
+        rewardsRedeemed: Number(raw.rewardsRedeemed) || 0,
+        streakAwardedDays: Array.isArray(raw.streakAwardedDays) ? raw.streakAwardedDays : [],
+        streakAwardedWeeks: Array.isArray(raw.streakAwardedWeeks) ? raw.streakAwardedWeeks : []
+      };
+    }
+
+    function saveRewardsData(data) {
+      localStorage.setItem("rewardData", JSON.stringify(data));
+    }
+
+    function getStreakInfo() {
+      const logs = getSavedLogs();
+      const dateKeys = Object.keys(logs)
+        .filter(key => Number(logs[key]) > 0)
+        .sort();
+
+      if (dateKeys.length === 0) {
+        return {
+          currentStreak: 0,
+          bestStreak: 0
+        };
+      }
+
+      let bestStreak = 1;
+      let running = 1;
+
+      for (let i = 1; i < dateKeys.length; i++) {
+        const prev = parseDateKey(dateKeys[i - 1]);
+        const curr = parseDateKey(dateKeys[i]);
+        const diff = daysBetween(prev, curr);
+
+        if (diff === 1) {
+          running++;
+          if (running > bestStreak) bestStreak = running;
+        } else if (diff > 1) {
+          running = 1;
+        }
+      }
+
+      let currentStreak = 0;
+      const todayKey = formatDateKeyFromDate(today);
+
+      if (Number(logs[todayKey]) > 0) {
+        currentStreak = 1;
+        let cursor = addDays(today, -1);
+
+        while (Number(logs[formatDateKeyFromDate(cursor)]) > 0) {
+          currentStreak++;
+          cursor = addDays(cursor, -1);
+        }
+      }
+
+      return {
+        currentStreak,
+        bestStreak
+      };
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
+    }
+
+    function updateDisplay() {
+      document.getElementById("time").innerText = formatTime(totalSeconds);
+
+      const totalMinutes = Math.floor(totalSeconds / 60);
+      document.getElementById("minutes").innerText =
+        "Today's unsaved reading: " + totalMinutes + " min";
+
+      const sessionStars = Math.floor(totalMinutes / 5);
+      document.getElementById("stars").innerText =
+        sessionStars > 0 ? "⭐".repeat(sessionStars) : "";
+    }
+
+    function getComputedRewardTotals() {
+      const rewardData = getRewardsData();
+
+      const totalStars =
+        (Number(rewardData.baseStars) || 0) +
+        (Number(rewardData.bonusStars) || 0);
+
+      const totalBadges =
+        Math.floor(totalStars / 10) +
+        (Number(rewardData.bonusBadges) || 0);
+
+      const availableRewards =
+        totalBadges - (Number(rewardData.rewardsRedeemed) || 0);
+
+      return {
+        totalStars: Number(totalStars) || 0,
+        totalBadges: Number(totalBadges) || 0,
+        availableRewards: Math.max(Number(availableRewards) || 0, 0),
+        rewardsRedeemed: Number(rewardData.rewardsRedeemed) || 0,
+        bonusStars: Number(rewardData.bonusStars) || 0,
+        bonusBadges: Number(rewardData.bonusBadges) || 0
+      };
+    }
+
+    function updateRewardDisplay() {
+      const totals = getComputedRewardTotals();
+      const streakInfo = getStreakInfo();
+
+      document.getElementById("totalStars").innerText = totals.totalStars || 0;
+      document.getElementById("totalBadges").innerText = totals.totalBadges || 0;
+      document.getElementById("availableRewards").innerText = totals.availableRewards || 0;
+      document.getElementById("rewardsRedeemed").innerText = totals.rewardsRedeemed || 0;
+
+      document.getElementById("currentStreak").innerText = streakInfo.currentStreak || 0;
+      document.getElementById("bestStreak").innerText = streakInfo.bestStreak || 0;
+      document.getElementById("bonusStars").innerText = totals.bonusStars || 0;
+      document.getElementById("bonusBadges").innerText = totals.bonusBadges || 0;
+    }
+
+    function startTimer() {
+      if (timer !== null) return;
+
+      timer = setInterval(() => {
+        totalSeconds++;
+        updateDisplay();
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(timer);
+      timer = null;
+    }
+
+    function resetTimer() {
+      stopTimer();
+      totalSeconds = 0;
+      updateDisplay();
+      document.getElementById("rewardMessage").innerText = "";
+    }
+
+    function applyStreakBonuses(todayKey) {
+      const rewardData = getRewardsData();
+      const streakInfo = getStreakInfo();
+      const currentStreak = Number(streakInfo.currentStreak) || 0;
+
+      let messages = [];
+
+      if (
+        currentStreak > 0 &&
+        currentStreak % 3 === 0 &&
+        !rewardData.streakAwardedDays.includes(todayKey)
+      ) {
+        rewardData.bonusStars += 2;
+        rewardData.streakAwardedDays.push(todayKey);
+        messages.push("🔥 3-day streak bonus: +2 stars");
+      }
+
+      const weekId = "week-" + Math.floor(currentStreak / 7);
+      if (
+        currentStreak > 0 &&
+        currentStreak % 7 === 0 &&
+        !rewardData.streakAwardedWeeks.includes(weekId)
+      ) {
+        rewardData.bonusBadges += 1;
+        rewardData.streakAwardedWeeks.push(weekId);
+        messages.push("🏅 7-day streak bonus: +1 badge");
+      }
+
+      saveRewardsData(rewardData);
+      return messages;
+    }
+
+    function saveTodayReading() {
+      stopTimer();
+
+      const minutesToAdd = Math.floor(totalSeconds / 60);
+
+      if (minutesToAdd <= 0) {
+        alert("Please read for at least 1 minute before saving.");
+        return;
+      }
+
+      const logs = getSavedLogs();
+      const key = getDateKey(today.getFullYear(), today.getMonth(), today.getDate());
+      logs[key] = (Number(logs[key]) || 0) + minutesToAdd;
+      saveLogs(logs);
+
+      const starsEarned = Math.floor(minutesToAdd / 5);
+
+      const rewardData = getRewardsData();
+      rewardData.baseStars += starsEarned;
+      saveRewardsData(rewardData);
+
+      const streakMessages = applyStreakBonuses(key);
+
+      totalSeconds = 0;
+      updateDisplay();
+      renderCalendar(currentMonth, currentYear);
+      updateSavedTodayText();
+      updateRewardDisplay();
+
+      let message = `Saved ${minutesToAdd} min. Earned ${starsEarned} star(s)!`;
+      if (streakMessages.length > 0) {
+        message += "\n" + streakMessages.join("\n");
+      }
+
+      document.getElementById("rewardMessage").innerText = message;
+    }
+
+    function redeemReward() {
+      const rewardData = getRewardsData();
+      const totals = getComputedRewardTotals();
+
+      if ((totals.availableRewards || 0) <= 0) {
+        document.getElementById("rewardMessage").innerText =
+          "No badge reward available yet.";
+        return;
+      }
+
+      rewardData.rewardsRedeemed += 1;
+      saveRewardsData(rewardData);
+      updateRewardDisplay();
+
+      document.getElementById("rewardMessage").innerText =
+        "🎉 Reward redeemed! Larry can choose one reward.";
+    }
+
+    function updateSavedTodayText() {
+      const logs = getSavedLogs();
+      const key = getDateKey(today.getFullYear(), today.getMonth(), today.getDate());
+      const saved = Number(logs[key]) || 0;
+      document.getElementById("savedTodayText").innerText = `${saved} min saved`;
+    }
+
+    function renderCalendar(month, year) {
+      const grid = document.getElementById("calendarGrid");
+      grid.innerHTML = "";
+
+      const logs = getSavedLogs();
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+
+      document.getElementById("monthTitle").innerText = `${monthNames[month]} ${year}`;
+
+      for (let i = 0; i < firstDay; i++) {
+        const emptyCell = document.createElement("div");
+        emptyCell.className = "day-cell empty";
+        grid.appendChild(emptyCell);
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement("div");
+        cell.className = "day-cell";
+
+        const isToday =
+          day === today.getDate() &&
+          month === today.getMonth() &&
+          year === today.getFullYear();
+
+        if (isToday) {
+          cell.classList.add("today");
+        }
+
+        const key = getDateKey(year, month, day);
+        const minutes = Number(logs[key]) || 0;
+
+        const dayNumber = document.createElement("div");
+        dayNumber.className = "day-number";
+        dayNumber.innerText = day;
+
+        const readingText = document.createElement("div");
+        readingText.className = "reading-time";
+        readingText.innerText = minutes > 0 ? `${minutes} min` : "";
+
+        const streakMark = document.createElement("div");
+        streakMark.className = "streak-mark";
+        if (minutes > 0) {
+          streakMark.innerText = "🔥 Read";
+        }
+
+        cell.appendChild(dayNumber);
+        cell.appendChild(readingText);
+        cell.appendChild(streakMark);
+        grid.appendChild(cell);
+      }
+    }
+
+    function changeMonth(offset) {
+      currentMonth += offset;
+
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      } else if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+
+      renderCalendar(currentMonth, currentYear);
+    }
+
+    updateDisplay();
+    renderCalendar(currentMonth, currentYear);
+    updateSavedTodayText();
+    updateRewardDisplay();
+  </script>
+</body>
+</html>
