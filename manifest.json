@@ -1,7 +1,7 @@
 {
   "name": "Larry Reading Tracker",
   "short_name": "Larry Reading",
-  "start_url": "./larry_reading_tracker_pwa.html",
+  "start_url": "./reading_app_color.html",
   "display": "standalone",
   "background_color": "#fff9db",
   "theme_color": "#ff922b",
