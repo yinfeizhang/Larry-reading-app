@@ -1,7 +1,7 @@
 const CACHE_NAME = "larry-reading-tracker-v1";
 const URLS_TO_CACHE = [
   "./",
-  "./larry_reading_tracker_pwa.html",
+  "./reading_app_color.html",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png"
